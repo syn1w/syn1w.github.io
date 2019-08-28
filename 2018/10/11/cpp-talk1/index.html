@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="cpp,lang,talk,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
+<meta name="keywords" content="cpp,lang,talk">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 闲谈（一）">
+<meta property="og:url" content="http://yoursite.com/2018/10/11/cpp-talk1/index.html">
+<meta property="og:site_name" content="vczn&#39;s notes">
+<meta property="og:description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-28T14:24:40.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ 闲谈（一）">
+<meta name="twitter:description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/10/11/cpp-talk1/">
+
+
+
+
+
+  <title>C++ 闲谈（一） | vczn's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">vczn's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">拟态是对个性的捍卫，而非放弃个性</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/11/cpp-talk1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="vczn">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="vczn's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++ 闲谈（一）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-11T00:32:26+08:00">
+                2018-10-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/talk/" itemprop="url" rel="index">
+                    <span itemprop="name">talk</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>学习 C++ 是在大学之后，到现在差不多两三年时间。<br>C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。<br>目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。</p>
+<p>记得第一次在黑框框中看到 <code>hello world</code> 多么激动。之后写代码也是间歇性勤奋，有时候一个 bug 能够连着改两天，有时候一天也不写一行代码。<br>因为当时对 C++ 比较感兴趣，花费了较多的时间在这门编程语言上，所以打算写一些东西来给之后的学习者作为一些参考。<br>当然，在学习计算机的道路上，把太多时间投入到编程语言的研究上，并不是最佳的选择。如果能够回到过去，我会把大量的时间花费到系统级的知识上。也许是走了一些弯路，不过是不是弯路没那么容易界定。</p>
+<p>在《The Design and Evolution Of C++》这本书中，C++ 之父 Bjarne Stroustrup 说过 C++ 的许多设计决策来源于他讨厌强迫别人按照某种特定方式行事。也就意味着 C++ 有多种编程范式：过程式、面向对象、泛型、函数式等等，从这个角度来看，可以说 C++ 是复杂的。C++ 给了程序员更多的自由，同样也更考验程序员的编程能力。<br>这里只谈论实际应用开发中的 C++。</p>
+<p>C++ 书籍的列表：</p>
+<ul>
+<li>入门阶段推荐 <a href="https://book.douban.com/subject/25708312/" target="_blank" rel="noopener">《C++ Primer》</a>，另外就是<a href="https://book.douban.com/subject/2280545/" target="_blank" rel="noopener">《Accelerated C++》</a>和<a href="https://book.douban.com/subject/1215826/" target="_blank" rel="noopener">《Essential C++》</a>。比较全面的一些的<a href="https://book.douban.com/subject/26857943/" target="_blank" rel="noopener">《C++ 程序设计语言》</a>，<a href="https://book.douban.com/subject/26419721/" target="_blank" rel="noopener">《C++ 标准库》</a> 也列出来，但是感觉还是直接查 <a href="http://zh.cppreference.com/w/%E9%A6%96%E9%A1%B5" target="_blank" rel="noopener">reference</a> 比较好一些。</li>
+<li>接下来就是学习一些 C++ 的最佳实践：Effective 系列 和 Exceptional 系列，一共六七本。</li>
+<li>再进一步，如果对 C++ 一些底层机制感兴趣可以看看 <a href="https://book.douban.com/subject/10427315/" target="_blank" rel="noopener">《深入探索 C++ 对象模型》</a>；如果想了解历史，可以看看 <a href="https://book.douban.com/subject/1096216/" target="_blank" rel="noopener">《C++ 语言的设计和演化》</a>；如果对 STL 实现感兴趣，可以看看 <a href="https://book.douban.com/subject/1110934/" target="_blank" rel="noopener">《STL 源码剖析》</a>，不过很多代码过于老旧，可以结合 C++11/14 来实现 STL；如果对模板感兴趣，可以看 <a href="https://book.douban.com/subject/2378124/" target="_blank" rel="noopener">《C++ Templates》</a> 和 <a href="https://book.douban.com/subject/4136223/" target="_blank" rel="noopener">《C++ 模板元编程》</a>，不过个人建议还是不要花太多时间来研究这个。</li>
+<li>C++ 再上一层，对开发应用程序也就没太多作用了，收益就远远小于把时间用在学习其他的事情上。</li>
+</ul>
+<p>上面所列的书单自行斟酌，比如入门可以只看《C++ Primer》也是完全可以的，进阶还是要多看一些最佳实践，因为 C++ 坑还是比较多的。还有需要不断地练习。</p>
+<p>最近也开始学习 Golang，对于服务器端开发还是挺不错的语言。<br>这个系列接下来也会聊一些 C++ 的最佳实践、关于 C++ 的细节、关于 C++ 的其他事情等等。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cpp/" rel="tag"># cpp</a>
+          
+            <a href="/tags/lang/" rel="tag"># lang</a>
+          
+            <a href="/tags/talk/" rel="tag"># talk</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/09/start/" rel="next" title="启程篇">
+                <i class="fa fa-chevron-left"></i> 启程篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/16/go-slice-1/" rel="prev" title="Golang 中 Slice 的坑">
+                Golang 中 Slice 的坑 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/head.jpg" alt="vczn">
+            
+              <p class="site-author-name" itemprop="name">vczn</p>
+              <p class="site-description motion-element" itemprop="description">try, think, enjoy</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/vczn" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">vczn</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
