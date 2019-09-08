@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next gemini use-motion" lang="zh-Hans">
+<html class="theme-next mist use-motion" lang="zh-Hans">
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -83,19 +83,19 @@
 
 
 
-<meta name="description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
+<meta name="description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  一、底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
 <meta name="keywords" content="golang,data structure">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Golang 中 Slice 的坑">
 <meta property="og:url" content="http://yoursite.com/2018/10/16/go-slice-1/index.html">
 <meta property="og:site_name" content="vczn&#39;s notes">
-<meta property="og:description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
+<meta property="og:description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  一、底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2018/10/16/go-slice-1/pit1_1.png">
-<meta property="og:updated_time" content="2019-09-07T14:18:55.599Z">
+<meta property="og:updated_time" content="2019-09-08T15:07:33.639Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang 中 Slice 的坑">
-<meta name="twitter:description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
+<meta name="twitter:description" content="最近在学 golang，发现 Slice 的一个坑。引发坑的原因是多个 Slice 可以共享底层的数据。 golang 的 Slice 类似于 C++ 的 std::vector&amp;lt;T&amp;gt;，功能上是动态数组。 参考代码 golang 1.11  一、底层原理slice 的结构体： 12345type slice struct &amp;#123;	array unsafe.Pointer	len">
 <meta name="twitter:image" content="http://yoursite.com/2018/10/16/go-slice-1/pit1_1.png">
 
 
@@ -104,7 +104,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Gemini',
+    scheme: 'Mist',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -352,7 +352,7 @@
 <p>golang 的 <code>Slice</code> 类似于 C++ 的 <code>std::vector&lt;T&gt;</code>，功能上是动态数组。</p>
 <p>参考代码 golang 1.11</p>
 <hr>
-<h1 id="底层原理"><a href="#底层原理" class="headerlink" title="底层原理"></a>底层原理</h1><p><code>slice</code> 的结构体：</p>
+<h1 id="一、底层原理"><a href="#一、底层原理" class="headerlink" title="一、底层原理"></a>一、底层原理</h1><p><code>slice</code> 的结构体：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span> &#123;</span><br><span class="line">	array unsafe.Pointer</span><br><span class="line">	<span class="built_in">len</span>   <span class="keyword">int</span></span><br><span class="line">	<span class="built_in">cap</span>   <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>看一下动态数组的底层是如何扩容的。首先判断是否有剩余空间容纳新元素，没有的话就重新分配一个适合的空间(一般为原空间的 2 或 1.5 倍)，然后把原先的元素移动到新的空间中。之后再把新元素移动到新的空间中。<br>这种增长策略可以减少开销，摊还分析得到 <code>append</code> 的时间复杂度为 O(1)。</p>
 <p>我们以 <code>{ len: 0, cap: 0}</code>，增长因子为 2 举例。下图为依次添加 <code>1,2,3,4,5</code> 之后动态数组的变化。实线框为已有元素，虚线框为剩余空间。</p>
@@ -362,7 +362,7 @@
 <p><code>Slice</code> 切片操作 <code>s[i:j]</code> 会创建新的 <code>Slice</code>，而且多个 <code>Slice</code> 底层共享同一内存空间，不是 C++ 那种直接把元素 copy 或 move 进去。比如：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">s1 := []<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;</span><br><span class="line">s2 := s1[:]</span><br><span class="line">s2[<span class="number">2</span>] = <span class="number">42</span></span><br><span class="line">fmt.<span class="built_in">println</span>(s1)      <span class="comment">// 1, 2, 42, 4, 5</span></span><br></pre></td></tr></table></figure>
 <p>这样就会引发一些较坑的问题。下面以实际例子说明。</p>
-<h1 id="实际例子"><a href="#实际例子" class="headerlink" title="实际例子"></a>实际例子</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := []<span class="keyword">int</span>&#123;<span class="number">0</span>&#125;</span><br><span class="line">    s = <span class="built_in">append</span>(s, <span class="number">1</span>)</span><br><span class="line">    s = <span class="built_in">append</span>(s, <span class="number">2</span>)     <span class="comment">// s == [0 1 2]</span></span><br><span class="line">    x := <span class="built_in">append</span>(s, <span class="number">3</span>)    <span class="comment">// </span></span><br><span class="line">    y := <span class="built_in">append</span>(s, <span class="number">4</span>)</span><br><span class="line">    fmt.<span class="built_in">println</span>(s, x, y) <span class="comment">// [0 1 2] [0 1 2 4] [0 1 2 4]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="二、实际例子"><a href="#二、实际例子" class="headerlink" title="二、实际例子"></a>二、实际例子</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    s := []<span class="keyword">int</span>&#123;<span class="number">0</span>&#125;</span><br><span class="line">    s = <span class="built_in">append</span>(s, <span class="number">1</span>)</span><br><span class="line">    s = <span class="built_in">append</span>(s, <span class="number">2</span>)     <span class="comment">// s == [0 1 2]</span></span><br><span class="line">    x := <span class="built_in">append</span>(s, <span class="number">3</span>)    <span class="comment">// </span></span><br><span class="line">    y := <span class="built_in">append</span>(s, <span class="number">4</span>)</span><br><span class="line">    fmt.<span class="built_in">println</span>(s, x, y) <span class="comment">// [0 1 2] [0 1 2 4] [0 1 2 4]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看到最后 <code>x</code> 和 <code>y</code> 都为 <code>[0 1 2 4]</code>，这样的结果就不符合本来的期待了。分析一下为什么出现这样的现象。</p>
 <p>由于增长策略的问题，在 <code>append(s, 2)</code> 之后，底层数组为 <code>[0 1 2]</code>，<code>s.len == 3, s.cap == 4</code>。<br>当 <code>x := append(s, 3)</code> 时，<code>s</code> 有足够的容量放置元素 3。由于 <code>x</code> 和 <code>s</code> 的底层数据指针相同，此时 <code>s.len</code> 和 <code>s.cap</code> 没有发生改变，<code>x.len == 4, x.cap == 4</code>，底层数组变为 <code>[0 1 2 3]</code>。<br>当 <code>y := append(s, 4)</code> 时，仍然检测到 <code>s</code> 有足够的容量放置元素 4，<code>y.len == 4, y.cap == 4</code>，此时 <code>s, x, y</code> 三者引用相同的底层数组，底层数组变为 <code>[0 1 2 4]</code>，也就解释了为何出现了上面的现象。</p>
 <p>再来看一个把 <code>Slice</code> 作为函数参数的问题。<code>Slice</code> 结构体为值传递。</p>
@@ -372,7 +372,7 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">modifyPointer</span><span class="params">(<span class="keyword">int</span>* p)</span> </span>&#123;</span><br><span class="line">    p = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><code>modifyElement</code> 修改了底层指针所指向的元素。类似于</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">modifyElement</span><span class="params">(<span class="keyword">int</span>* p)</span> </span>&#123;</span><br><span class="line">    p[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>使用 <code>Slice</code> 应该尽量避免实际例子1 中的操作，尽量使用 <code>s = append(s, x)</code> 这样的形式。</p>
+<h1 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h1><p>使用 <code>Slice</code> 应该尽量避免实际例子1 中的操作，尽量使用 <code>s = append(s, x)</code> 这样的形式。</p>
 
       
     </div>
@@ -561,7 +561,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#底层原理"><span class="nav-number">1.</span> <span class="nav-text">底层原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实际例子"><span class="nav-number">2.</span> <span class="nav-text">实际例子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、底层原理"><span class="nav-text">一、底层原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、实际例子"><span class="nav-text">二、实际例子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、总结"><span class="nav-text">三、总结</span></a></li></ol></div>
             
 
           </div>
@@ -599,7 +599,7 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
 
 
 
@@ -698,13 +698,6 @@
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
-
-
 
   
   <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
