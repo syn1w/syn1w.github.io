@@ -83,18 +83,18 @@
 
 
 
-<meta name="description" content="introELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
+<meta name="description" content="IntroELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
 <meta name="keywords" content="CS,Linux">
 <meta property="og:type" content="article">
-<meta property="og:title" content="elf64">
+<meta property="og:title" content="ELF64">
 <meta property="og:url" content="http://yoursite.com/2019/09/08/elf64/index.html">
 <meta property="og:site_name" content="vczn&#39;s notes">
-<meta property="og:description" content="introELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
+<meta property="og:description" content="IntroELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-09-08T14:50:13.818Z">
+<meta property="og:updated_time" content="2019-09-08T14:53:32.537Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="elf64">
-<meta name="twitter:description" content="introELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
+<meta name="twitter:title" content="ELF64">
+<meta name="twitter:description" content="IntroELF64(Executable and Linkable Format 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。 相关工具有 nm, objdump, readelf 一点">
 
 
 
@@ -130,7 +130,7 @@
 
 
 
-  <title>elf64 | vczn's notes</title>
+  <title>ELF64 | vczn's notes</title>
   
 
 
@@ -274,7 +274,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">elf64</h1>
+          <h1 class="post-title" itemprop="name headline">ELF64</h1>
         
 
         <div class="post-meta">
@@ -346,10 +346,11 @@
       
 
       
-        <h1 id="intro"><a href="#intro" class="headerlink" title="intro"></a>intro</h1><p><strong>ELF64</strong>(<strong>E</strong>xecutable and <strong>L</strong>inkable <strong>F</strong>ormat 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。</p>
+        <h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h1><p><strong>ELF64</strong>(<strong>E</strong>xecutable and <strong>L</strong>inkable <strong>F</strong>ormat 64) 是一种目前很多 Linux 和很多类 Unix 系统下使用的目标代码(executables, object code, shared libraries and core dumps) 64-bit 格式。是 System V ABI 的一部分。</p>
 <p>相关工具有 <code>nm, objdump, readelf</code></p>
 <p>一点历史问题：Unix 最早使用可执行文件是 <code>a.out</code> 格式。当出现动态库时，原先的 <code>a.out</code> 就出现了问题， (SVR3) Unix System V Release 3 使用 COFF 来解决这个问题，后来 Windows NT 基于 COFF 格式，制定了 PE 格式。到 SVR4 的时候，在 COFF 的基础上引入了 ELF 格式。这也是为什么 PE 和 ELF 如此相似的原因。</p>
-<h1 id="format"><a href="#format" class="headerlink" title="format"></a>format</h1><h2 id="overview"><a href="#overview" class="headerlink" title="overview"></a>overview</h2><p><strong>ELF64 由下列部分组成：</strong></p>
+<hr>
+<h1 id="Format"><a href="#Format" class="headerlink" title="Format"></a>Format</h1><h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><p><strong>ELF64 由下列部分组成：</strong></p>
 <ul>
 <li>ELF header，描述文件特征，比如类型、架构、版本、入口点等等。必须出现在文件开始处。</li>
 <li>Section header，对 relocatable 是必须的，对 loadable files 是可选的。</li>
@@ -410,7 +411,7 @@
 <p>可以使用 <code>readelf -h elf-file</code> 查看 ELF header </p>
 <p>下面是 header 结构体</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_hdr</span> &#123;</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>	e_ident[EI_NIDENT];	<span class="comment">// ELF magic number </span></span><br><span class="line">  Elf64_Half    e_type;             <span class="comment">// Shared object file or Relocatable file</span></span><br><span class="line">  Elf64_Half    e_machine;          <span class="comment">// X86-64 ...</span></span><br><span class="line">  Elf64_Word    e_version;</span><br><span class="line">  Elf64_Addr    e_entry;		    </span><br><span class="line">  Elf64_Off     e_phoff;		    <span class="comment">// Program header table file offset</span></span><br><span class="line">  Elf64_Off     e_shoff;		    <span class="comment">// Section header table file offset</span></span><br><span class="line">  Elf64_Word    e_flags;</span><br><span class="line">  Elf64_Half    e_ehsize;           <span class="comment">// elf header size</span></span><br><span class="line">  Elf64_Half    e_phentsize;        <span class="comment">// program headers size</span></span><br><span class="line">  Elf64_Half    e_phnum;            <span class="comment">// program headers number</span></span><br><span class="line">  Elf64_Half    e_shentsize;        <span class="comment">// section headers size</span></span><br><span class="line">  Elf64_Half    e_shnum;            <span class="comment">// section headers number</span></span><br><span class="line">  Elf64_Half    e_shstrndx;         <span class="comment">// section header string table index</span></span><br><span class="line">&#125; Elf64_Ehdr;</span><br></pre></td></tr></table></figure>
-<h2 id="section-header"><a href="#section-header" class="headerlink" title="section header"></a>section header</h2><p>可以使用 <code>readelf -S elf-files</code> 或者 <code>objdump -h files</code> 查看 section headers，两者输出结果略微不同</p>
+<h2 id="Section-header"><a href="#Section-header" class="headerlink" title="Section header"></a>Section header</h2><p>可以使用 <code>readelf -S elf-files</code> 或者 <code>objdump -h files</code> 查看 section headers，两者输出结果略微不同</p>
 <p>ELF 文件的所有信息存储到 sections 中，除了 3 种 header，section headers 是 sections 的一个目录。sections 可以被 section header 的 index 标识。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_shdr</span> &#123;</span></span><br><span class="line">    Elf64_Word  sh_name;       <span class="comment">// .text, .data, .bss ...</span></span><br><span class="line">    Elf64_Word  sh_type;       <span class="comment">// PROGBITS, NOBITS</span></span><br><span class="line">    Elf64_Xword sh_flags;</span><br><span class="line">    Elf64_Addr  sh_addr;</span><br><span class="line">    Elf64_Off   sh_offset;     <span class="comment">// file offset</span></span><br><span class="line">    Elf64_Xword sh_size;       <span class="comment">// size of section in bytes</span></span><br><span class="line">    Elf64_Word  sh_link;       <span class="comment">// index of another sectio</span></span><br><span class="line">    Elf64_Word  sh_info;       <span class="comment">// additional section information</span></span><br><span class="line">    Elf64_Xword sh_addralign;  </span><br><span class="line">    Elf64_Xword sh_entsize;    <span class="comment">// entry size if section holds table</span></span><br><span class="line">&#125; Elf64_Shdr;</span><br></pre></td></tr></table></figure>
 <p>接下来对各个 section 进行简介</p>
@@ -428,17 +429,15 @@
 <p><code>.shstrtab</code>: Section name string table, <code>.strtab</code>: string table, <code>.symtab</code>: symbol table</p>
 <p><code>.init, .fini</code>: 程序初始化的中止的代码段</p>
 <p>自定义段可以使用 <code>__attribute((section(&quot;SectionName&quot;))) decl</code> </p>
-<h2 id="program-header"><a href="#program-header" class="headerlink" title="program header"></a>program header</h2><p>可以使用 <code>readelf -l elf-file</code> 查看 program header</p>
+<h2 id="Program-header"><a href="#Program-header" class="headerlink" title="Program header"></a>Program header</h2><p>可以使用 <code>readelf -l elf-file</code> 查看 program header</p>
 <p>sections 被分组为 segments 进行装载。program header 是 segment 的一个目录。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">elf64_phdr</span> &#123;</span></span><br><span class="line">    Elf64_Word   p_type;   <span class="comment">// NULL, INTERP, LOAD, DYNAMIC, PHDR...</span></span><br><span class="line">    Elf64_Word   p_flags;  <span class="comment">// R W E MASKOS MASKPROC</span></span><br><span class="line">    Elf64_Off    p_offset; <span class="comment">// segment file offset</span></span><br><span class="line">    Elf64_Addr   p_vaddr;  <span class="comment">// segment virtual address</span></span><br><span class="line">    Elf64_Addr   p_paddr;  <span class="comment">// segment physical address</span></span><br><span class="line">    Elf64_Xword  p_filesz; <span class="comment">// segment size in file</span></span><br><span class="line">    Elf64_Xword  p_memsz;  <span class="comment">// segment size in memory</span></span><br><span class="line">    Elf64_Xword  p_align;  <span class="comment">// segment alignment file &amp; memory</span></span><br><span class="line">&#125; Elf64_Phdr;</span><br></pre></td></tr></table></figure>
-<p>接下来会对 static link 和 dynamic link 过程进行分析。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><blockquote>
-<p><a href="https://uclibc.org/docs/elf-64-gen.pdf" target="_blank" rel="noopener">https://uclibc.org/docs/elf-64-gen.pdf</a></p>
+<p>接下来会对 static link 和 dynamic link 的过程进行分析。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="https://uclibc.org/docs/elf-64-gen.pdf" target="_blank" rel="noopener">https://uclibc.org/docs/elf-64-gen.pdf</a></p>
 <p><a href="https://0xax.gitbooks.io/linux-insides/Theory/linux-theory-2.html" target="_blank" rel="noopener">https://0xax.gitbooks.io/linux-insides/Theory/linux-theory-2.html</a></p>
 <p><a href="https://wiki.osdev.org" target="_blank" rel="noopener">https://wiki.osdev.org</a></p>
 <p><a href="https://people.redhat.com/mpolacek/src/devconf2012.pdf" target="_blank" rel="noopener">https://people.redhat.com/mpolacek/src/devconf2012.pdf</a></p>
-<p><a href="https://book.douban.com/subject/3652388/" target="_blank" rel="noopener">程序员的自我修养</a></p>
-</blockquote>
+<p><a href="https://book.douban.com/subject/3652388/" target="_blank" rel="noopener">程序员的自我修养-链接、装载与库</a></p>
 
       
     </div>
@@ -623,7 +622,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#intro"><span class="nav-number">1.</span> <span class="nav-text">intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#format"><span class="nav-number">2.</span> <span class="nav-text">format</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overview"><span class="nav-number">2.1.</span> <span class="nav-text">overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ELF-header"><span class="nav-number">2.2.</span> <span class="nav-text">ELF header</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#section-header"><span class="nav-number">2.3.</span> <span class="nav-text">section header</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#program-header"><span class="nav-number">2.4.</span> <span class="nav-text">program header</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intro"><span class="nav-number">1.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Format"><span class="nav-number">2.</span> <span class="nav-text">Format</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">2.1.</span> <span class="nav-text">Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ELF-header"><span class="nav-number">2.2.</span> <span class="nav-text">ELF header</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Section-header"><span class="nav-number">2.3.</span> <span class="nav-text">Section header</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Program-header"><span class="nav-number">2.4.</span> <span class="nav-text">Program header</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>
