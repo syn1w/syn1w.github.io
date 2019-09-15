@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CS,Windows,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、IntroPE(Protable Executable) 是主要使用在 Windows 上目标代码格式，还有 UEFI 也是 PE 格式的。在 ELF64 中谈到 PE 和 ELF 都是 COFF 发展而来。也称为 PE/COFF 格式。32-bit 为 PE，64-bit 为 PE32+，基本就是 PE 扩展为 64-bit 地址格式。 和 ELF 基本类似，也是基于段的格式。同样段名只是提">
+<meta name="keywords" content="CS,Windows">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PE">
+<meta property="og:url" content="http://yoursite.com/2019/09/15/PE/index.html">
+<meta property="og:site_name" content="vczn&#39;s notes">
+<meta property="og:description" content="一、IntroPE(Protable Executable) 是主要使用在 Windows 上目标代码格式，还有 UEFI 也是 PE 格式的。在 ELF64 中谈到 PE 和 ELF 都是 COFF 发展而来。也称为 PE/COFF 格式。32-bit 为 PE，64-bit 为 PE32+，基本就是 PE 扩展为 64-bit 地址格式。 和 ELF 基本类似，也是基于段的格式。同样段名只是提">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">
+<meta property="og:updated_time" content="2019-09-15T02:36:08.187Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PE">
+<meta name="twitter:description" content="一、IntroPE(Protable Executable) 是主要使用在 Windows 上目标代码格式，还有 UEFI 也是 PE 格式的。在 ELF64 中谈到 PE 和 ELF 都是 COFF 发展而来。也称为 PE/COFF 格式。32-bit 为 PE，64-bit 为 PE32+，基本就是 PE 扩展为 64-bit 地址格式。 和 ELF 基本类似，也是基于段的格式。同样段名只是提">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/09/15/PE/">
+
+
+
+
+
+  <title>PE | vczn's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">vczn's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">拟态是对个性的捍卫，而非放弃个性</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/15/PE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="vczn">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="vczn's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PE</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-15T10:34:33+08:00">
+                2019-09-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CS/" itemprop="url" rel="index">
+                    <span itemprop="name">CS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一、Intro"><a href="#一、Intro" class="headerlink" title="一、Intro"></a>一、Intro</h1><p>PE(<strong>P</strong>rotable <strong>E</strong>xecutable) 是主要使用在 Windows 上目标代码格式，还有 UEFI 也是 PE 格式的。在 ELF64 中谈到 PE 和 ELF 都是 COFF 发展而来。也称为 PE/COFF 格式。32-bit 为 PE，64-bit 为 PE32+，基本就是 PE 扩展为 64-bit 地址格式。</p>
+<p>和 ELF 基本类似，也是基于段的格式。同样段名只是提示作用和控制 link。自定义段名 </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> data_seg(<span class="meta-string">"FOO"</span>)    <span class="comment">// set</span></span></span><br><span class="line"><span class="keyword">int</span> global = <span class="number">1</span>;            <span class="comment">// FOO section</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> data_seg(<span class="meta-string">".data"</span>)  <span class="comment">// reset</span></span></span><br></pre></td></tr></table></figure>
+<p>MSVC 的编译器和链接器分别叫 <code>cl</code> 和 <code>link</code></p>
+<p>进行实验的工具有 <code>dumpbin，xxd</code></p>
+<h1 id="二、Format"><a href="#二、Format" class="headerlink" title="二、Format"></a>二、Format</h1><h2 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h2><p>先使用 <code>dumpbin /Summary test.exe</code> 查看一个可执行文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.CRT .bss .data .debug_str .idata </span><br><span class="line">.pdata .rdata .text .tls .xdata ...</span><br></pre></td></tr></table></figure>
+<p>可以看到很多熟悉的 section。</p>
+<p>和 ELF 类似，由许多的 headers(file headers and section table/headers) 、sections 组成。</p>
+<p>大致看一下 32-bit PE 的结构(图片来自wiki百科)：</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg" alt="PE"></p>
+<p><strong>Dos Header</strong></p>
+<p>开头为 <code>0x5A4D</code>(小端)。在 <code>0x3C</code> 有4字节(小端)的 PE signature 文件偏移。比如 <code>0x3C</code> 处的 4 字节为 0x80 00 00 00，那么在文件偏移 0x80 处有 PE signature。</p>
+<p><strong>MS-Dos Stub(Image only)</strong></p>
+<p>接下来就是 Dos Stub，如果在 Dos 下运行，打印 “This program cannot be run in DOS mode”。然后从 PE  signature 就开始 COFF file format。</p>
+<p><strong>PE format</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">     ULONG Signature;</span><br><span class="line">     IMAGE_FILE_HEADER FileHeader;</span><br><span class="line">     IMAGE_OPTIONAL_HEADER OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;</span><br></pre></td></tr></table></figure>
+<h2 id="2-File-headers"><a href="#2-File-headers" class="headerlink" title="2. File headers"></a>2. File headers</h2><p><strong>PE signature(Image only)</strong></p>
+<p><code>&quot;PE\0\0&quot;</code></p>
+<p><strong>COFF file header(object and image)</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_FILE_HEADER</span> &#123;</span></span><br><span class="line">    WORD  Machine;</span><br><span class="line">    WORD  NumberOfSections;</span><br><span class="line">    DWORD TimeDateStamp;</span><br><span class="line">    DWORD PointerToSymbolTable;</span><br><span class="line">    DWORD NumberOfSymbols;</span><br><span class="line">    WORD  SizeOfOptionalHeader;</span><br><span class="line">    WORD  Characteristics;</span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br></pre></td></tr></table></figure>
+<p>在 object 文件的开头或在 image file 的 PE signature 后。<code>WORD</code> 为 2bytes，<code>DWORD</code> 为 4 bytes。</p>
+<p><strong>Optional header(image only)</strong></p>
+<p>为 loader 提供信息，所以对 image 文件是必须的，对 object 文件时可选的。包括以下部分：</p>
+<ul>
+<li>Standard fields: 被 COFF 的所有的实现所定义。在 64-bit 没有</li>
+<li>Windows-specific fields: Windows 的 linker 和 loader 所需要的额外信息，比如 subsystem</li>
+<li>Data directories: 在 image 文件中找到并且由操作系统使用的特殊表的 address/size pair，比如 import table 和 export table。</li>
+</ul>
+<h2 id="3-Section-Table"><a href="#3-Section-Table" class="headerlink" title="3. Section Table"></a>3. Section Table</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_SECTION_HEADER</span> &#123;</span></span><br><span class="line">    BYTE  Name[IMAGE_SIZEOF_SHORT_NAME];  <span class="comment">// section name</span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        DWORD PhysicalAddress;</span><br><span class="line">        DWORD VirtualSize;        <span class="comment">// 段被加载到内存的大小</span></span><br><span class="line">    &#125; Misc;</span><br><span class="line">    DWORD VirtualAddress;         <span class="comment">// 段被加载到内存后的虚拟地址</span></span><br><span class="line">    DWORD SizeOfRawData;          <span class="comment">// 该段在文件中的大小，.bss 段为 0</span></span><br><span class="line">    DWORD PointerToRawData;       <span class="comment">// 段在文件中的位置</span></span><br><span class="line">    DWORD PointerToRelocations;   <span class="comment">// 段在重定向表的位置</span></span><br><span class="line">    DWORD PointerToLinenumbers;   <span class="comment">// 段的行号表在文件中的位置</span></span><br><span class="line">    WORD  NumberOfRelocations;</span><br><span class="line">    WORD  NumberOfLinenumbers;</span><br><span class="line">    DWORD Characteristics;        <span class="comment">// 各种属性，见下文档连接</span></span><br><span class="line">&#125; IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;</span><br></pre></td></tr></table></figure>
+<p><a href="https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#section-flags" target="_blank" rel="noopener">Characteristics doc</a></p>
+<h2 id="4-Sections"><a href="#4-Sections" class="headerlink" title="4. Sections"></a>4. Sections</h2><p>Section Table(Header) 之后就是一个一个 Sections 的实际内容了，很多段和 ELF 文件类似。先简单介绍一些简单的 sections。</p>
+<p><code>.idata|.edata</code> 导入表和导出表。</p>
+<p><code>.tls</code> TLS(Thread-Local Storage) 数据</p>
+<p><code>.pdata</code> Exception information</p>
+<p><code>.debug$S|.debug$P|.debug$T</code>  包含 symbol、precompiled header file、type 相关的调试信息</p>
+<p>接下来主要看一下 <code>.drectve</code> </p>
+<p>drectve 是 directive 的缩写，主要是 compiler 给 linker 留下的指令(directive)，告诉 linker 应该怎么去 link 这个 object file。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># example: dumpbin /ALL test.obj </span><br><span class="line"># ...</span><br><span class="line">SECTION HEADER #1</span><br><span class="line">.drectve name</span><br><span class="line">       0 physical address</span><br><span class="line">       0 virtual address</span><br><span class="line">     181 size of raw data</span><br><span class="line">    4754 file pointer to raw data (00004754 to 000048D4)</span><br><span class="line">       0 file pointer to relocation table</span><br><span class="line">       0 file pointer to line numbers</span><br><span class="line">       0 number of relocations</span><br><span class="line">       0 number of line numbers</span><br><span class="line">  100A00 flags</span><br><span class="line">         Info          # 该段是信息或注释 section</span><br><span class="line">         Remove        # 链接成 image file 时移除该段</span><br><span class="line">         1 byte align</span><br></pre></td></tr></table></figure>
+<p>具体的内容有版本、宏、指定 CRT/Lib 还有其他传递给 linker 的参数。</p>
+<h2 id="5-Other"><a href="#5-Other" class="headerlink" title="5. Other"></a>5. Other</h2><p>Sections 结束之后是是一个非常大的 Symbol Table，符号表的位置在 File headers  <code>PointerToSymbolTable</code> 中给出。再接下来是 String Table，看到 String Table 在 dumpbin 的输出只有大小，可以通过 COFF header 中的 <code>PointerToSymbolTable</code> 加上 <code>NumberOfSymbols * sizeof(Symbol)</code> 就可以得到  String Table 的位置，再加上 String Table 的大小就能定位到整个 String Table。</p>
+<h1 id="三、参考资料"><a href="#三、参考资料" class="headerlink" title="三、参考资料"></a>三、参考资料</h1><blockquote>
+<p><a href="https://docs.microsoft.com/en/windows/win32/debug/pe-format" target="_blank" rel="noopener">https://docs.microsoft.com/en/windows/win32/debug/pe-format</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Portable_Executable" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Portable_Executable</a></p>
+<p><a href="https://wiki.osdev.org/PE" target="_blank" rel="noopener">https://wiki.osdev.org/PE</a></p>
+<p><a href="https://book.douban.com/subject/3652388/" target="_blank" rel="noopener">程序员的自我修养-链接、装载与库</a></p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CS/" rel="tag"># CS</a>
+          
+            <a href="/tags/Windows/" rel="tag"># Windows</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/08/elf64/" rel="next" title="ELF64">
+                <i class="fa fa-chevron-left"></i> ELF64
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/head.jpg" alt="vczn">
+            
+              <p class="site-author-name" itemprop="name">vczn</p>
+              <p class="site-description motion-element" itemprop="description">try, think, enjoy</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/vczn" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、Intro"><span class="nav-text">一、Intro</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、Format"><span class="nav-text">二、Format</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Overview"><span class="nav-text">1. Overview</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-File-headers"><span class="nav-text">2. File headers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Section-Table"><span class="nav-text">3. Section Table</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Sections"><span class="nav-text">4. Sections</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Other"><span class="nav-text">5. Other</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、参考资料"><span class="nav-text">三、参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">vczn</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
