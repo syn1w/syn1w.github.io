@@ -72,7 +72,7 @@
 
 
 
-  <meta name="keywords" content="talk,cpp,lang,">
+  <meta name="keywords" content="LLVM,clang,tool,备忘,">
 
 
 
@@ -83,18 +83,18 @@
 
 
 
-<meta name="description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
-<meta name="keywords" content="talk,cpp,lang">
+<meta name="description" content="注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用 生成 AST1234clang -emit-ast test.c         # generate test.ast(binary format)clang -cc1 -ast-dump test.c    # print AST to stdout(with">
+<meta name="keywords" content="LLVM,clang,tool,备忘">
 <meta property="og:type" content="article">
-<meta property="og:title" content="C++ 闲谈（一）">
-<meta property="og:url" content="http://yoursite.com/2018/10/11/cpp-talk1/index.html">
+<meta property="og:title" content="clang 命令总结">
+<meta property="og:url" content="http://yoursite.com/2020/03/24/clang-dump-graph/index.html">
 <meta property="og:site_name" content="syn1w&#39;s notes">
-<meta property="og:description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
+<meta property="og:description" content="注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用 生成 AST1234clang -emit-ast test.c         # generate test.ast(binary format)clang -cc1 -ast-dump test.c    # print AST to stdout(with">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-08-28T14:24:40.386Z">
+<meta property="og:updated_time" content="2020-03-24T16:04:15.158Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="C++ 闲谈（一）">
-<meta name="twitter:description" content="学习 C++ 是在大学之后，到现在差不多两三年时间。C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。 记得第一次在黑框框中看到 hello world 多么激动。之后写代码也是间">
+<meta name="twitter:title" content="clang 命令总结">
+<meta name="twitter:description" content="注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用 生成 AST1234clang -emit-ast test.c         # generate test.ast(binary format)clang -cc1 -ast-dump test.c    # print AST to stdout(with">
 
 
 
@@ -124,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/10/11/cpp-talk1/">
+  <link rel="canonical" href="http://yoursite.com/2020/03/24/clang-dump-graph/">
 
 
 
 
 
-  <title>C++ 闲谈（一） | syn1w's notes</title>
+  <title>clang 命令总结 | syn1w's notes</title>
   
 
 
@@ -257,7 +257,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/11/cpp-talk1/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/24/clang-dump-graph/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="syn1w">
@@ -274,7 +274,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">C++ 闲谈（一）</h1>
+          <h1 class="post-title" itemprop="name headline">clang 命令总结</h1>
         
 
         <div class="post-meta">
@@ -286,8 +286,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-11T00:32:26+08:00">
-                2018-10-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-24T22:19:46+08:00">
+                2020-03-24
               </time>
             
 
@@ -309,8 +309,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/talk/" itemprop="url" rel="index">
-                    <span itemprop="name">talk</span>
+                  <a href="/categories/clang/" itemprop="url" rel="index">
+                    <span itemprop="name">clang</span>
                   </a>
                 </span>
 
@@ -346,18 +346,25 @@
       
 
       
-        <p>学习 C++ 是在大学之后，到现在差不多两三年时间。<br>C++ 也是我接触的第一门编程语言，有各种经验带路，看了一些比较经典的书籍，比较大的项目做过一个 TinySTL 和一个基本残废 Linux 网络库，不过之后还会填坑。<br>目前我还欠缺太多实际的项目去锻炼自己，还有学习其他方面更加深入的知识，讨论 C++ 也实在是诚惶诚恐。</p>
-<p>记得第一次在黑框框中看到 <code>hello world</code> 多么激动。之后写代码也是间歇性勤奋，有时候一个 bug 能够连着改两天，有时候一天也不写一行代码。<br>因为当时对 C++ 比较感兴趣，花费了较多的时间在这门编程语言上，所以打算写一些东西来给之后的学习者作为一些参考。<br>当然，在学习计算机的道路上，把太多时间投入到编程语言的研究上，并不是最佳的选择。如果能够回到过去，我会把大量的时间花费到系统级的知识上。也许是走了一些弯路，不过是不是弯路没那么容易界定。</p>
-<p>在《The Design and Evolution Of C++》这本书中，C++ 之父 Bjarne Stroustrup 说过 C++ 的许多设计决策来源于他讨厌强迫别人按照某种特定方式行事。也就意味着 C++ 有多种编程范式：过程式、面向对象、泛型、函数式等等，从这个角度来看，可以说 C++ 是复杂的。C++ 给了程序员更多的自由，同样也更考验程序员的编程能力。<br>这里只谈论实际应用开发中的 C++。</p>
-<p>C++ 书籍的列表：</p>
-<ul>
-<li>入门阶段推荐 <a href="https://book.douban.com/subject/25708312/" target="_blank" rel="noopener">《C++ Primer》</a>，另外就是<a href="https://book.douban.com/subject/2280545/" target="_blank" rel="noopener">《Accelerated C++》</a>和<a href="https://book.douban.com/subject/1215826/" target="_blank" rel="noopener">《Essential C++》</a>。比较全面的一些的<a href="https://book.douban.com/subject/26857943/" target="_blank" rel="noopener">《C++ 程序设计语言》</a>，<a href="https://book.douban.com/subject/26419721/" target="_blank" rel="noopener">《C++ 标准库》</a> 也列出来，但是感觉还是直接查 <a href="http://zh.cppreference.com/w/%E9%A6%96%E9%A1%B5" target="_blank" rel="noopener">reference</a> 比较好一些。</li>
-<li>接下来就是学习一些 C++ 的最佳实践：Effective 系列 和 Exceptional 系列，一共六七本。</li>
-<li>再进一步，如果对 C++ 一些底层机制感兴趣可以看看 <a href="https://book.douban.com/subject/10427315/" target="_blank" rel="noopener">《深入探索 C++ 对象模型》</a>；如果想了解历史，可以看看 <a href="https://book.douban.com/subject/1096216/" target="_blank" rel="noopener">《C++ 语言的设计和演化》</a>；如果对 STL 实现感兴趣，可以看看 <a href="https://book.douban.com/subject/1110934/" target="_blank" rel="noopener">《STL 源码剖析》</a>，不过很多代码过于老旧，可以结合 C++11/14 来实现 STL；如果对模板感兴趣，可以看 <a href="https://book.douban.com/subject/2378124/" target="_blank" rel="noopener">《C++ Templates》</a> 和 <a href="https://book.douban.com/subject/4136223/" target="_blank" rel="noopener">《C++ 模板元编程》</a>，不过个人建议还是不要花太多时间来研究这个。</li>
-<li>C++ 再上一层，对开发应用程序也就没太多作用了，收益就远远小于把时间用在学习其他的事情上。</li>
-</ul>
-<p>上面所列的书单自行斟酌，比如入门可以只看《C++ Primer》也是完全可以的，进阶还是要多看一些最佳实践，因为 C++ 坑还是比较多的。还有需要不断地练习。</p>
-<p>最近也开始学习 Golang，对于服务器端开发还是挺不错的语言。<br>这个系列接下来也会聊一些 C++ 的最佳实践、关于 C++ 的细节、关于 C++ 的其他事情等等。</p>
+        <p>注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用</p>
+<h2 id="生成-AST"><a href="#生成-AST" class="headerlink" title="生成 AST"></a>生成 AST</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">clang -emit-ast test.c         <span class="comment"># generate test.ast(binary format)</span></span><br><span class="line">clang -cc1 -ast-dump test.c    <span class="comment"># print AST to stdout(without color, no header)</span></span><br><span class="line">clang -Xclang -ast-dump test.c <span class="comment"># print AST to stdout(with color)</span></span><br><span class="line">clang -cc1 -ast-view test.c    <span class="comment"># print AST dot file</span></span><br></pre></td></tr></table></figure>
+<h2 id="生成-IR"><a href="#生成-IR" class="headerlink" title="生成 IR"></a>生成 IR</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -emit-llvm -S test.c     <span class="comment"># generate test.ll</span></span><br></pre></td></tr></table></figure>
+<h2 id="生成图数据"><a href="#生成图数据" class="headerlink" title="生成图数据"></a>生成图数据</h2><p>生成图数据现在集成到 Clang 静态检测器中，所以需要使用 <code>clang -cc1 -analyze</code> 参数。</p>
+<p>可以使用 <code>clang -cc1 -analyzer-checker-help | grep debug</code> 命令查看目前支持生成的一些图数据。<code>Dump</code> 开头的是以文本形式进行标准输出，<code>View</code> 开头的是以图形(dot)格式进行输出并打开相应软件来展示。</p>
+<p>生成图数据是以函数调用链为单位的，如果需要对某个函数进行分析需要加上 <code>-analyze-function=xxx</code> 参数。</p>
+<p>使用 <code>clang -cc1</code> 命令，Clang 是不会去查找系统头文件的，需要手动 <code>-I</code> 或 <code>-isystem</code> 来指定头文件目录或使用 AST 来进行分析。</p>
+<p>头文件位置可以使用 <code>clang -### test.c -other-compile-args</code> 来找到所需头文件位置。</p>
+<p>注：在 Windows 系统上，需要检测器参数需要加引号，比如 <code>debug.ViewCFG</code></p>
+<p><strong>函数调用图(Call Graph)</strong>:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.ast</span><br><span class="line">clang -cc1 -analyze -analyzer-checker=debug.ViewCallGraph test.c</span><br></pre></td></tr></table></figure>
+<p><strong>控制流图(CFG)</strong>:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.ViewCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.ViewCFG -analyze-function=foo test.c</span><br></pre></td></tr></table></figure>
+<p><strong>爆炸图(Exploded Graph)</strong>:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpExplodedGraph test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpExplodedGraph test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpExplodedGraph -analyze-function=foo test.c</span><br></pre></td></tr></table></figure>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a href="https://clang-analyzer.llvm.org/checker_dev_manual.html" target="_blank" rel="noopener">https://clang-analyzer.llvm.org/checker_dev_manual.html</a></p>
+<p><a href="https://clang.llvm.org/docs/ClangCommandLineReference.html" target="_blank" rel="noopener">https://clang.llvm.org/docs/ClangCommandLineReference.html</a></p>
+<p><a href="https://clang.llvm.org/docs/DriverInternals.html" target="_blank" rel="noopener">https://clang.llvm.org/docs/DriverInternals.html</a></p>
+<p><a href="https://clang.llvm.org/docs/FAQ.html" target="_blank" rel="noopener">https://clang.llvm.org/docs/FAQ.html</a></p>
 
       
     </div>
@@ -375,11 +382,13 @@
       
         <div class="post-tags">
           
-            <a href="/tags/talk/" rel="tag"># talk</a>
+            <a href="/tags/LLVM/" rel="tag"># LLVM</a>
           
-            <a href="/tags/cpp/" rel="tag"># cpp</a>
+            <a href="/tags/clang/" rel="tag"># clang</a>
           
-            <a href="/tags/lang/" rel="tag"># lang</a>
+            <a href="/tags/tool/" rel="tag"># tool</a>
+          
+            <a href="/tags/备忘/" rel="tag"># 备忘</a>
           
         </div>
       
@@ -392,8 +401,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/10/09/start/" rel="next" title="启程篇">
-                <i class="fa fa-chevron-left"></i> 启程篇
+              <a href="/2019/11/22/work-thinking/" rel="next" title="关于工作的思考">
+                <i class="fa fa-chevron-left"></i> 关于工作的思考
               </a>
             
           </div>
@@ -401,10 +410,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/10/16/go-slice-1/" rel="prev" title="Golang 中 Slice 的坑">
-                Golang 中 Slice 的坑 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -456,8 +461,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -529,6 +543,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#生成-AST"><span class="nav-text">生成 AST</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成-IR"><span class="nav-text">生成 IR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成图数据"><span class="nav-text">生成图数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#references"><span class="nav-text">references</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
