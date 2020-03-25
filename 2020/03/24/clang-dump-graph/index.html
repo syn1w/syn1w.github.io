@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="syn1w&#39;s notes">
 <meta property="og:description" content="注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用 生成 AST1234clang -emit-ast test.c         # generate test.ast(binary format)clang -cc1 -ast-dump test.c    # print AST to stdout(with">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-03-24T16:04:15.158Z">
+<meta property="og:updated_time" content="2020-03-24T16:05:38.782Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="clang 命令总结">
 <meta name="twitter:description" content="注：以下内容主要针对 Clang 4 之后的版本，而且不保证之后打破向后兼容性，以 Clang 的官方文档为主，本文主要为个人备忘使用 生成 AST1234clang -emit-ast test.c         # generate test.ast(binary format)clang -cc1 -ast-dump test.c    # print AST to stdout(with">
@@ -354,9 +354,9 @@
 <p>生成图数据是以函数调用链为单位的，如果需要对某个函数进行分析需要加上 <code>-analyze-function=xxx</code> 参数。</p>
 <p>使用 <code>clang -cc1</code> 命令，Clang 是不会去查找系统头文件的，需要手动 <code>-I</code> 或 <code>-isystem</code> 来指定头文件目录或使用 AST 来进行分析。</p>
 <p>头文件位置可以使用 <code>clang -### test.c -other-compile-args</code> 来找到所需头文件位置。</p>
-<p>注：在 Windows 系统上，需要检测器参数需要加引号，比如 <code>debug.ViewCFG</code></p>
+<p>注：在 Windows 系统上，需要检测器参数需要加引号，比如 <code>&quot;debug.ViewCFG&quot;</code></p>
 <p><strong>函数调用图(Call Graph)</strong>:</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.ast</span><br><span class="line">clang -cc1 -analyze -analyzer-checker=debug.ViewCallGraph test.c</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.ast</span><br><span class="line">clang -cc1 -analyze -analyzer-checker=debug.ViewCallGraph test.c</span><br><span class="line"><span class="comment"># Windows</span></span><br><span class="line">clang -cc1 -analyze -analyzer-checker=<span class="string">"debug.ViewCallGraph"</span> test.c</span><br></pre></td></tr></table></figure>
 <p><strong>控制流图(CFG)</strong>:</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.DumpCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.ViewCFG test.c</span><br><span class="line">clang -cc1 -analyze -analyzer-chekcer=debug.ViewCFG -analyze-function=foo test.c</span><br></pre></td></tr></table></figure>
 <p><strong>爆炸图(Exploded Graph)</strong>:</p>
