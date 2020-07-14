@@ -358,13 +358,7 @@
 <p>可以看到很多熟悉的 section。</p>
 <p>和 ELF 类似，由许多的 headers(file headers and section table/headers) 、sections 组成。</p>
 <p>大致看一下 32-bit PE 的结构(图片来自wiki百科)：</p>
-<figure class="image-bubble">
-                <div class="img-lightbox">
-                    <div class="overlay"></div>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg" alt="PE" title>
-                </div>
-                <div class="image-caption">PE</div>
-            </figure>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Portable_Executable_32_bit_Structure_in_SVG_fixed.svg" alt="PE"></p>
 <p><strong>Dos Header</strong></p>
 <p>开头为 <code>0x5A4D</code>(小端)。在 <code>0x3C</code> 有4字节(小端)的 PE signature 文件偏移。比如 <code>0x3C</code> 处的 4 字节为 0x80 00 00 00，那么在文件偏移 0x80 处有 PE signature。</p>
 <p><strong>MS-Dos Stub(Image only)</strong></p>
@@ -524,7 +518,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -535,7 +529,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -546,7 +540,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

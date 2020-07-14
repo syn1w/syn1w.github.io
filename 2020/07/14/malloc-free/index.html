@@ -72,7 +72,7 @@
 
 
 
-  <meta name="keywords" content="talk,">
+  <meta name="keywords" content="Linux,Dig,API,">
 
 
 
@@ -83,18 +83,21 @@
 
 
 
-<meta name="description" content="一晃之间过去了三年，普普通通的大学生活也即将结束，即将踏入工作岗位，虽然留有一些遗憾，不过时间已无法倒流。虽然出于对技术方面的热忱，本科阶段学习了一点知识，比起计算机世界不过是沧海一粟。而且也浪费了很多时间。这是一个试水启程，先试试看吧！">
-<meta name="keywords" content="talk">
+<meta name="description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
+<meta name="keywords" content="Linux,Dig,API">
 <meta property="og:type" content="article">
-<meta property="og:title" content="启程篇">
-<meta property="og:url" content="http://yoursite.com/2018/10/09/start/index.html">
+<meta property="og:title" content="深入探究 malloc&#x2F;free">
+<meta property="og:url" content="http://yoursite.com/2020/07/14/malloc-free/index.html">
 <meta property="og:site_name" content="syn1w&#39;s notes">
-<meta property="og:description" content="一晃之间过去了三年，普普通通的大学生活也即将结束，即将踏入工作岗位，虽然留有一些遗憾，不过时间已无法倒流。虽然出于对技术方面的热忱，本科阶段学习了一点知识，比起计算机世界不过是沧海一粟。而且也浪费了很多时间。这是一个试水启程，先试试看吧！">
+<meta property="og:description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-08-28T14:25:02.168Z">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x86_linux_memory_layout.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x64_linux_memory_layout.png">
+<meta property="og:updated_time" content="2020-07-14T15:46:31.505Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="启程篇">
-<meta name="twitter:description" content="一晃之间过去了三年，普普通通的大学生活也即将结束，即将踏入工作岗位，虽然留有一些遗憾，不过时间已无法倒流。虽然出于对技术方面的热忱，本科阶段学习了一点知识，比起计算机世界不过是沧海一粟。而且也浪费了很多时间。这是一个试水启程，先试试看吧！">
+<meta name="twitter:title" content="深入探究 malloc&#x2F;free">
+<meta name="twitter:description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/14/malloc-free/x86_linux_memory_layout.png">
 
 
 
@@ -124,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/10/09/start/">
+  <link rel="canonical" href="http://yoursite.com/2020/07/14/malloc-free/">
 
 
 
 
 
-  <title>启程篇 | syn1w's notes</title>
+  <title>深入探究 malloc/free | syn1w's notes</title>
   
 
 
@@ -257,7 +260,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/09/start/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/14/malloc-free/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="syn1w">
@@ -274,7 +277,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">启程篇</h1>
+          <h1 class="post-title" itemprop="name headline">深入探究 malloc/free</h1>
         
 
         <div class="post-meta">
@@ -286,8 +289,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-09T17:19:35+08:00">
-                2018-10-09
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-14T21:33:44+08:00">
+                2020-07-14
               </time>
             
 
@@ -309,8 +312,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/talk/" itemprop="url" rel="index">
-                    <span itemprop="name">talk</span>
+                  <a href="/categories/Dig/" itemprop="url" rel="index">
+                    <span itemprop="name">Dig</span>
                   </a>
                 </span>
 
@@ -346,7 +349,44 @@
       
 
       
-        <p>一晃之间过去了三年，普普通通的大学生活也即将结束，即将踏入工作岗位，虽然留有一些遗憾，不过时间已无法倒流。<br>虽然出于对技术方面的热忱，本科阶段学习了一点知识，比起计算机世界不过是沧海一粟。而且也浪费了很多时间。<br>这是一个试水启程，先试试看吧！</p>
+        <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p>现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一 </p>
+<p>需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存 </p>
+<p>本文主要讨论基于 x64 Linux glibc 的 malloc 和 free </p>
+<h1 id="二、基础知识"><a href="#二、基础知识" class="headerlink" title="二、基础知识"></a>二、基础知识</h1><h2 id="1-内存布局"><a href="#1-内存布局" class="headerlink" title="1. 内存布局"></a>1. 内存布局</h2><p>进程在内存中布局常见的有：代码段(<code>text</code>)、数据段(<code>data</code>)、<code>bss</code> 段、栈(<code>stack</code>)、堆(<code>heap</code>)等等 </p>
+<p>下图分别是 x86 和 x64 下 Linux 进程内存布局： </p>
+<img src="/2020/07/14/malloc-free/x86_linux_memory_layout.png" title="x86 linux memory layout">
+<img src="/2020/07/14/malloc-free/x64_linux_memory_layout.png" title="x64 linux memory layout">
+<p>当前内核默认配置下，x64 的内存布局进程的栈和 <code>mmap</code> 映射区域并不是从一个固定地址开始，并且每次启动时的值都 不一样，这是程序在启动时随机改变这些值的设置，使得使用缓冲区溢出进行攻击更加困难 </p>
+<h2 id="2-Linux-系统调用"><a href="#2-Linux-系统调用" class="headerlink" title="2. Linux 系统调用"></a>2. Linux 系统调用</h2><p>上节提到的 <code>heap</code> 和 <code>mmap</code> 映射区域是可以提供给用户程序使用的虚拟内存空间 ，对于 <code>heap</code> 的操作，Linux 提供了 <code>brk()</code> 函数，C 运行时库提供了 <code>sbrk()</code> 函数；对于 <code>mmap</code> 映射区域的操作，Linux 提供了 <code>mmap()</code> 和 <code>munmap()</code> 函数 </p>
+<p><strong>brk/sbrk</strong>  </p>
+<p>调用 <code>brk()</code> 可以改变 program break 的位置，也就是未初始化数据段(<code>bss</code>段)之后的第一个位置 </p>
+<p>增加 program break 相当于分配了内存，减小 program break 相当于释放了内存 </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">brk</span><span class="params">(<span class="keyword">void</span> *addr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sbrk</span><span class="params">(<span class="keyword">intptr_t</span> increment)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>内存的延迟分配：在 program break 的位置抬升后，程序可以访问新分配区域内的任何内存地址，而此时物理内存页尚未分配。内核会在进程首次试图访问这些虚拟内存地址时自动分配新的物理内存页   </p>
+<p>内核数据结构 <code>mm_struct</code> 中 <code>start_brk</code> 是进程动态内存分配起始地址（堆的起始地址），<code>brk</code> 是动态内存分配当前的终止地址 </p>
+<p><strong>mmap</strong>  </p>
+<p><code>mmap()</code> 将一个文件或者其它文件对象(比如 device)映射进内存</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mmap.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">(<span class="keyword">void</span> *addr, <span class="keyword">size_t</span> length, <span class="keyword">int</span> prot, </span></span></span><br><span class="line"><span class="function"><span class="params">           <span class="keyword">int</span> flags, <span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">munmap</span><span class="params">(<span class="keyword">void</span> *addr, <span class="keyword">size_t</span> length)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数介绍：</p>
+<ul>
+<li><p><code>addr</code>：映射区的开始地址，如果 <code>addr</code> 是 <code>NULL</code>，内核选择一个页对齐的位置创建映射区 </p>
+</li>
+<li><p><code>length</code>：映射区的长度，必须大于 0</p>
+</li>
+<li><p><code>prot</code>：描述了映射区内存保护标志，不能与文件的打开模式冲突，可选有 <code>PROT_EXEC</code>，<code>PROT_READ</code>，<code>PROT_WRITE</code>，<code>PROT_NONE</code> 等等 </p>
+</li>
+<li>flags：指定映射对象的类型，映射选项和映射页是否可以共享，以下按位组合：<ul>
+<li><code>MAP_FIXED</code> 使用指定的映射起始地址，如果由 <code>addr</code> 和 <code>length</code> 参数指定的内存区域重叠于现存的映射空间，重叠部分将会被丢弃。如果指定的起始地址不可用，操作将会失败。并且起始地址必须落在页的边界上</li>
+<li><code>MAP_PRIVATE</code> 建立一个写入时拷贝的私有映射。内存区域的写入不会影响到原文件。 这个标志和以上标志是互斥的 </li>
+<li><code>MAP_NORESERVE</code> 不要为映射区保留 swap 空间，如果不保留 swap 空间，如果没有可用的物理内存，则在写入时收到 <code>SIGSEGV</code> 信号  </li>
+<li><code>MAP_ANONYMOUS</code> 匿名映射，映射区不与任何文件关联</li>
+</ul>
+</li>
+<li><code>fd</code>：有效的文件描述符，如果 <code>MAP_ANONYMOUS</code> 被设定，为了兼容问题，其值应为-1</li>
+<li><code>offset</code>：被映射对象内容的起点</li>
+</ul>
+<h1 id="附录-A-参考资料"><a href="#附录-A-参考资料" class="headerlink" title="附录 A 参考资料"></a>附录 A 参考资料</h1><p><a href="https://developer.ibm.com/tutorials/l-memory/" target="_blank" rel="noopener">IBM Inside memory management</a>  </p>
+<p><a href="https://paper.seebug.org/papers/Archive/refs/heap/glibc内存管理ptmalloc源代码分析.pdf" target="_blank" rel="noopener">glibc ptmalloc2</a></p>
 
       
     </div>
@@ -364,7 +404,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/talk/" rel="tag"># talk</a>
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+            <a href="/tags/Dig/" rel="tag"># Dig</a>
+          
+            <a href="/tags/API/" rel="tag"># API</a>
           
         </div>
       
@@ -377,15 +421,15 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2020/03/24/clang-dump-graph/" rel="next" title="clang 命令总结">
+                <i class="fa fa-chevron-left"></i> clang 命令总结
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/10/11/cpp-talk1/" rel="prev" title="C++ 闲谈（一）">
-                C++ 闲谈（一） <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -437,8 +481,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -510,6 +563,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、基础知识"><span class="nav-text">二、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-内存布局"><span class="nav-text">1. 内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Linux-系统调用"><span class="nav-text">2. Linux 系统调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录-A-参考资料"><span class="nav-text">附录 A 参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
