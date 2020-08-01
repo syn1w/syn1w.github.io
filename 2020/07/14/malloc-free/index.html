@@ -93,7 +93,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x86_linux_memory_layout.png">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x64_linux_memory_layout.png">
-<meta property="og:updated_time" content="2020-08-01T11:05:04.705Z">
+<meta property="og:updated_time" content="2020-08-01T11:23:14.170Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入探究 malloc&#x2F;free">
 <meta name="twitter:description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
@@ -414,12 +414,10 @@
 <p>缺点：大部分无法干涉何时释放内存、多数情况垃圾收集比其他形式的内存管理更慢、垃圾收集错误引发的缺陷难于调试</p>
 </li>
 </ul>
-<p><strong>内存管理的设计目标</strong>   </p>
+<p><strong>内存管理的设计目标</strong></p>
 <ul>
-<li><p>最大化兼容性（比如遵守现有 <code>POSIX</code> 等规范）</p>
-</li>
-<li><p>最大化可移植性</p>
-</li>
+<li>最大化兼容性</li>
+<li>最大化可移植性</li>
 <li>浪费最小空间</li>
 <li>分配释放内存速度</li>
 <li>可通过参数以适应不同的情况</li>
@@ -499,6 +497,7 @@
 <td style="text-align:center">差</td>
 <td style="text-align:center">中</td>
 <td style="text-align:center">中</td>
+<td style="text-align:center">N/A</td>
 </tr>
 </tbody>
 </table>
