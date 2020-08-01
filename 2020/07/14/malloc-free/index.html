@@ -93,7 +93,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x86_linux_memory_layout.png">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x64_linux_memory_layout.png">
-<meta property="og:updated_time" content="2020-07-14T15:46:31.505Z">
+<meta property="og:updated_time" content="2020-08-01T11:05:04.705Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入探究 malloc&#x2F;free">
 <meta name="twitter:description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
@@ -385,8 +385,129 @@
 <li><code>fd</code>：有效的文件描述符，如果 <code>MAP_ANONYMOUS</code> 被设定，为了兼容问题，其值应为-1</li>
 <li><code>offset</code>：被映射对象内容的起点</li>
 </ul>
+<h2 id="3-内存管理相关"><a href="#3-内存管理相关" class="headerlink" title="3. 内存管理相关"></a>3. 内存管理相关</h2><p>当不知道程序的每个部分将需要多少内存时，系统内存空间有限，而内存需求又是变化的， 这时就需要内存管理程序来负责分配和回收内存    </p>
+<p>内存管理的方法：</p>
+<ul>
+<li><p>C-style 的内存管理程序：主要使用 <code>malloc/free</code> 来分配和释放内存  </p>
+</li>
+<li><p>内存池(Memory Pool)：内存池是一种半内存管理方法。这些程序会经历一些特定的阶段，而且每个阶段中都有分配给进程的特定阶段的内存。将整个过程拆分成几个阶段，每个阶段都有自己的内存池，在结束每个阶段时，一次释放所有内存  </p>
+<p>优点：</p>
+<ul>
+<li>内存的分配和回收更快，都可以 O(1) 的时间完成</li>
+<li>可以预先分配错误处理池，以便程序在内存被耗尽时可以恢复</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>不能与第三方库很好的合作</li>
+<li>如果程序结构变化，可能不得不修改内存池，导致内存管理模块得重新设计  </li>
+<li>设计时，需要按照程序需求来做调整，才能保证时间和空间效率</li>
+</ul>
+</li>
+<li><p>引用计数(Reference Count)：</p>
+<p>在引用计数中，所有共享的数据结构都有一个域来包含当前活动“引用”结构的次数。当向一个程序传递一个指向某个数据结构指针时，该程序会将引用计数增加 1  当进程完成对它的使用后，该程序就会将引用计数减少 1。结束这个动作之后，它还会检查计数是否已经减到零。如果是，那么它将释放内存。  </p>
+<p>优点：实现简单、可以尽快回收不再使用的内存、清晰的标明每个对象的生存周期</p>
+<p>缺点：引用计数占据了一定的空间、频繁更新引用计数带来的效率问题、循环引用问题导致使用比较麻烦</p>
+</li>
+<li><p>垃圾回收（Garbage Collection）：</p>
+<p>全自动地检测并移除不再使用的数据对象。垃圾收集器通常会在当可用内存减少到少于一个具体的阈值时运行。为了有效地管理内存，很多类型的垃圾收集器都需要知道数据结构内部指针的规划。为了正确运行垃圾收集器，它们必须是语言本身的一部分  </p>
+<p>优点：不必担心内存的双重释放或者对象的生命周期</p>
+<p>缺点：大部分无法干涉何时释放内存、多数情况垃圾收集比其他形式的内存管理更慢、垃圾收集错误引发的缺陷难于调试</p>
+</li>
+</ul>
+<p><strong>内存管理的设计目标</strong>   </p>
+<ul>
+<li><p>最大化兼容性（比如遵守现有 <code>POSIX</code> 等规范）</p>
+</li>
+<li><p>最大化可移植性</p>
+</li>
+<li>浪费最小空间</li>
+<li>分配释放内存速度</li>
+<li>可通过参数以适应不同的情况</li>
+<li>最大化局部性</li>
+<li>最大化调试功能</li>
+<li>最大化适应性，适应多种情况</li>
+<li>支持多线程的能力</li>
+</ul>
+<p>上述的很多指标是互相冲突的，需要在不同的策略上进行权衡，来更好的满足本身的需求  </p>
+<h2 id="4-内存分配策略对比"><a href="#4-内存分配策略对比" class="headerlink" title="4. 内存分配策略对比"></a>4. 内存分配策略对比</h2><p>GNU <code>malloc</code>：GNU <code>malloc</code> 继承自 <code>ptmalloc</code>(<code>pthread malloc</code>)，<code>ptmalloc</code> 继承自 Doug Lea Malloc。</p>
+<p>Hoard：目标是使内存分配在多线程环境中进行得非常快。因此，它的构造以锁的使用为中心，从而使所有进程不必等待分配内存。它可以显著地加快那些进行很多分配和回收的多线程进程的速度  </p>
+<p><code>jemalloc</code>：原先被使用做 FreeBSD libc 的分配器，现在 Facebook、Firefox 中使用了 <code>jemalloc</code>，主要特点是每个线程绑定到一个独立的 arena 上来避免锁竞争，不过某个线程占用大量空间会导致内存空间的浪费。还有可以从预先确实大小的对象构成的池中分配对象。有一些用于对象大小的 <code>size_class</code> </p>
+<p><code>TCMalloc</code>：Thread-Caching Malloc，是Google 开源工具 google-perftools 中的成员，与 GNU <code>malloc</code> 相比 <code>TCMalloc</code> 内存的分配上效率和速度要高得多，<code>TCMalloc</code> 有比较高的空间利用率，只额外花费 1%的空间。 尽量避免加锁（一次加锁解锁约浪费 100ns），使用更高效的 spinlock，采用更合理的粒度，小块内存和大块内存分配采取不同的策略  </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">策略</th>
+<th style="text-align:center">分配速度</th>
+<th style="text-align:center">回收速度</th>
+<th style="text-align:center">缓存局部性</th>
+<th style="text-align:center">易用性</th>
+<th style="text-align:center">通用性</th>
+<th style="text-align:center">SMP 线程友好度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">GNU <code>malloc</code></td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">快</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">容易</td>
+<td style="text-align:center">高</td>
+<td style="text-align:center">中</td>
+</tr>
+<tr>
+<td style="text-align:center">Hoard</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">容易</td>
+<td style="text-align:center">高</td>
+<td style="text-align:center">高</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>TCMalloc</code></td>
+<td style="text-align:center">快</td>
+<td style="text-align:center">快</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">容易</td>
+<td style="text-align:center">高</td>
+<td style="text-align:center">高</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Reference Count</code></td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">N/A</td>
+<td style="text-align:center">极好</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">依赖于 <code>malloc</code> 实现</td>
+</tr>
+<tr>
+<td style="text-align:center">Pool</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">非常快</td>
+<td style="text-align:center">极好</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">依赖于 <code>malloc</code> 实现</td>
+</tr>
+<tr>
+<td style="text-align:center">Garbage collection</td>
+<td style="text-align:center">中（当回收时速度慢）</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">差</td>
+<td style="text-align:center">中</td>
+<td style="text-align:center">中</td>
+</tr>
+</tbody>
+</table>
+</div>
 <h1 id="附录-A-参考资料"><a href="#附录-A-参考资料" class="headerlink" title="附录 A 参考资料"></a>附录 A 参考资料</h1><p><a href="https://developer.ibm.com/tutorials/l-memory/" target="_blank" rel="noopener">IBM Inside memory management</a>  </p>
-<p><a href="https://paper.seebug.org/papers/Archive/refs/heap/glibc内存管理ptmalloc源代码分析.pdf" target="_blank" rel="noopener">glibc ptmalloc2</a></p>
+<p><a href="https://paper.seebug.org/papers/Archive/refs/heap/glibc内存管理ptmalloc源代码分析.pdf" target="_blank" rel="noopener">glibc 内存管理ptmalloc2源代码分析</a></p>
+<p><a href="https://sourceware.org/glibc/wiki/MallocInternals" target="_blank" rel="noopener">glibc MallocInternal wiki</a></p>
+<p><a href="http://www.malloc.de/en/" target="_blank" rel="noopener">ptmalloc1/2/3 源码</a></p>
+<p><a href="https://stackoverflow.com/questions/1624726/how-does-jemalloc-work-what-are-the-benefits" target="_blank" rel="noopener">jemalloc stackoverflow</a></p>
 
       
     </div>
@@ -573,7 +694,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、基础知识"><span class="nav-text">二、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-内存布局"><span class="nav-text">1. 内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Linux-系统调用"><span class="nav-text">2. Linux 系统调用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录-A-参考资料"><span class="nav-text">附录 A 参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、基础知识"><span class="nav-text">二、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-内存布局"><span class="nav-text">1. 内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Linux-系统调用"><span class="nav-text">2. Linux 系统调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-内存管理相关"><span class="nav-text">3. 内存管理相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-内存分配策略对比"><span class="nav-text">4. 内存分配策略对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录-A-参考资料"><span class="nav-text">附录 A 参考资料</span></a></li></ol></div>
             
 
           </div>
