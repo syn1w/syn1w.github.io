@@ -93,7 +93,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x86_linux_memory_layout.png">
 <meta property="og:image" content="http://yoursite.com/2020/07/14/malloc-free/x64_linux_memory_layout.png">
-<meta property="og:updated_time" content="2020-08-01T11:23:14.170Z">
+<meta property="og:updated_time" content="2021-01-06T13:47:29.883Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入探究 malloc&#x2F;free">
 <meta name="twitter:description" content="一、概述现代计算机程序大多都运行在操作系统之上，内存管理是计算机软件编码中很重要的基础领域之一  需要实现给程序分配足够的内存来处理数据、在适当的时候收回分配出去的内存  本文主要讨论基于 x64 Linux glibc 的 malloc 和 free  二、基础知识1. 内存布局进程在内存中布局常见的有：代码段(text)、数据段(data)、bss 段、栈(stack)、堆(heap)等等">
@@ -502,6 +502,7 @@
 </tbody>
 </table>
 </div>
+<h1 id="三、ptmalloc"><a href="#三、ptmalloc" class="headerlink" title="三、ptmalloc"></a>三、<code>ptmalloc</code></h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>Linux 中早期的 <code>malloc</code> 由 Doug Lea 实现，存在的问题是多线程情况下如何保证分配和回收的正确和高效。Wolfram Gloger 在 Doug Lea 的基础上改进，使得 <code>glibc</code> 的 <code>malloc</code> 可以支持多线程。在 <code>glibc</code> 中，集成了 <code>ptmalloc2</code> 的改进版本（见 <code>glibc</code> 中 <code>malloc</code> 的源码，比如我目前正在使用 Ubuntu1804 中 带有的 <a href="https://github.com/lunaczp/glibc-2.27/blob/master/malloc/malloc.c" target="_blank" rel="noopener">glibc2.27 malloc</a>），<code>ptmalloc2</code> 的性能比 <code>ptmalloc3</code> 略高一点</p>
 <h1 id="附录-A-参考资料"><a href="#附录-A-参考资料" class="headerlink" title="附录 A 参考资料"></a>附录 A 参考资料</h1><p><a href="https://developer.ibm.com/tutorials/l-memory/" target="_blank" rel="noopener">IBM Inside memory management</a>  </p>
 <p><a href="https://paper.seebug.org/papers/Archive/refs/heap/glibc内存管理ptmalloc源代码分析.pdf" target="_blank" rel="noopener">glibc 内存管理ptmalloc2源代码分析</a></p>
 <p><a href="https://sourceware.org/glibc/wiki/MallocInternals" target="_blank" rel="noopener">glibc MallocInternal wiki</a></p>
@@ -628,7 +629,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -693,7 +694,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、基础知识"><span class="nav-text">二、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-内存布局"><span class="nav-text">1. 内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Linux-系统调用"><span class="nav-text">2. Linux 系统调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-内存管理相关"><span class="nav-text">3. 内存管理相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-内存分配策略对比"><span class="nav-text">4. 内存分配策略对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录-A-参考资料"><span class="nav-text">附录 A 参考资料</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、基础知识"><span class="nav-text">二、基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-内存布局"><span class="nav-text">1. 内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Linux-系统调用"><span class="nav-text">2. Linux 系统调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-内存管理相关"><span class="nav-text">3. 内存管理相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-内存分配策略对比"><span class="nav-text">4. 内存分配策略对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、ptmalloc"><span class="nav-text">三、ptmalloc</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-概述"><span class="nav-text">1. 概述</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录-A-参考资料"><span class="nav-text">附录 A 参考资料</span></a></li></ol></div>
             
 
           </div>
@@ -713,7 +714,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
