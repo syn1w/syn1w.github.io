@@ -83,18 +83,18 @@
 
 
 
-<meta name="description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+<meta name="description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步，对内存的“读-修改-写”是一个原子操作，而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_">
 <meta name="keywords" content="C++,Dig,Arch,Atomic">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++ memory order">
 <meta property="og:url" content="http://yoursite.com/2021/01/23/memory-order/index.html">
 <meta property="og:site_name" content="syn1w&#39;s notes">
-<meta property="og:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+<meta property="og:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步，对内存的“读-修改-写”是一个原子操作，而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2021-01-25T17:01:13.378Z">
+<meta property="og:updated_time" content="2021-01-25T17:04:46.755Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++ memory order">
-<meta name="twitter:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+<meta name="twitter:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步，对内存的“读-修改-写”是一个原子操作，而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_">
 
 
 
@@ -357,7 +357,7 @@
       
 
       
-        <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p>在 C++ 中，对 <code>std::atomic&lt;T&gt;</code>  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 <code>std::memory_order</code> 指定的 memory order 对非原子内存访问定序  </p>
+        <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p>在 C++ 中，对 <code>std::atomic&lt;T&gt;</code>  的访问可以建立线程间同步，对内存的“读-修改-写”是一个原子操作，而且按照 <code>std::memory_order</code> 指定的 memory order 对非原子内存访问定序  </p>
 <p>C++ 标准提供了 6 种 memory order</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> memory_order &#123;</span><br><span class="line">    memory_order_relaxed,</span><br><span class="line">    memory_order_consume,</span><br><span class="line">    memory_order_acquire,</span><br><span class="line">    memory_order_release,</span><br><span class="line">    memory_order_acq_rel,</span><br><span class="line">    memory_order_seq_cst</span><br><span class="line">&#125; memory_order;</span><br></pre></td></tr></table></figure>
 <p>第一次看到这些概念肯定会云里雾里，因为在现代计算机中，为了提高执行速度，CPU 中增加了 cache，store buffer，有了乱序执行，出现了编译器优化(reorder)，多 CPU 以及多线程等等，就使得问题变得非常复杂。</p>
@@ -534,7 +534,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>

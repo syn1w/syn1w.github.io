@@ -360,9 +360,9 @@
       
         
           
-          一、概述在 C++ 中，对 std::atomic&lt;T&gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序  
+          一、概述在 C++ 中，对 std::atomic&lt;T&gt;  的访问可以建立线程间同步，对内存的“读-修改-写”是一个原子操作，而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序  
 C++ 标准提供了 6 种 memory order
-12
+1
           ...
           <!--noindex-->
           <div class="post-button text-center">
@@ -1511,7 +1511,7 @@ golang 的 Slice 类似于 C++ 的 std::vector&lt;T&gt;，功能上是动态数�
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
