@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="C++,Dig,Arch,Atomic,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+<meta name="keywords" content="C++,Dig,Arch,Atomic">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ memory order">
+<meta property="og:url" content="http://yoursite.com/2021/01/23/memory-order/index.html">
+<meta property="og:site_name" content="syn1w&#39;s notes">
+<meta property="og:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2021-01-25T17:01:13.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ memory order">
+<meta name="twitter:description" content="一、概述在 C++ 中，对 std::atomic&amp;lt;T&amp;gt;  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 std::memory_order 指定的 memory order 对非原子内存访问定序   C++ 标准提供了 6 种 memory order 12345678typedef enum memory_order &amp;#123;    memory_o">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/23/memory-order/">
+
+
+
+
+
+  <title>C++ memory order | syn1w's notes</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">syn1w's notes</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">拟态是对个性的捍卫，而非放弃个性</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/23/memory-order/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="syn1w">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="syn1w's notes">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++ memory order</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-23T16:19:11+08:00">
+                2021-01-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index">
+                    <span itemprop="name">C++</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/Atomic/" itemprop="url" rel="index">
+                    <span itemprop="name">Atomic</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p>在 C++ 中，对 <code>std::atomic&lt;T&gt;</code>  的访问可以建立线程间同步（对内存的“读-修改-写”是一条指令），而且按照 <code>std::memory_order</code> 指定的 memory order 对非原子内存访问定序  </p>
+<p>C++ 标准提供了 6 种 memory order</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> memory_order &#123;</span><br><span class="line">    memory_order_relaxed,</span><br><span class="line">    memory_order_consume,</span><br><span class="line">    memory_order_acquire,</span><br><span class="line">    memory_order_release,</span><br><span class="line">    memory_order_acq_rel,</span><br><span class="line">    memory_order_seq_cst</span><br><span class="line">&#125; memory_order;</span><br></pre></td></tr></table></figure>
+<p>第一次看到这些概念肯定会云里雾里，因为在现代计算机中，为了提高执行速度，CPU 中增加了 cache，store buffer，有了乱序执行，出现了编译器优化(reorder)，多 CPU 以及多线程等等，就使得问题变得非常复杂。</p>
+<p>考虑下面简单的代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> avalue;</span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> bvalue;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setValues</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    avalue = a;  <span class="comment">// 1</span></span><br><span class="line">    bvalue = b;  <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getValues</span><span class="params">(<span class="keyword">int</span>&amp; a, <span class="keyword">int</span>&amp; b)</span> </span>&#123;</span><br><span class="line">    a = avalue; <span class="comment">// 3</span></span><br><span class="line">    b = bvalue; <span class="comment">// 4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为 1 和 2 没有依赖关系，有的编译器可能把 2 优化到 1 的前面，而且 CPU 的乱序执行也有可能先执行完 2，再去执行 1；还有如果 <code>setValues</code> 和 <code>getValues</code> 分别在两个线程，能够获取到的 a 和 b 值也无法确定</p>
+<p>首先记住一个前提，memory order 并<strong>不是限制多线程的执行顺序</strong>，而且<strong>规定一个线程内的访问共享内存指令如何执行</strong>，其中的共享内存更确切应该叫做共享变量，比如全局变量等等</p>
+<p>从程序员使用的角度来分析以下的四种情况：</p>
+<p><br></p>
+<h1 id="二、release-acquire"><a href="#二、release-acquire" class="headerlink" title="二、release/acquire"></a>二、release/acquire</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="built_in">std</span>::atomic&lt;<span class="keyword">int</span>&gt; avalue;</span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> bvalue;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setValues</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    bvalue = b; <span class="comment">// 1</span></span><br><span class="line">    avalue.store(a, <span class="built_in">std</span>::memory_order_release); <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getValues</span><span class="params">(<span class="keyword">int</span>&amp; a, <span class="keyword">int</span>&amp; b)</span> </span>&#123;</span><br><span class="line">    a = avalue.load(<span class="built_in">std</span>::memory_order_acquire); <span class="comment">// 3</span></span><br><span class="line">    b = bvalue; <span class="comment">// 4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>memory_order_release</code>：确保当前线程中的读或写不能被重排到此<strong>存储</strong>后，也就是 2 之前的内存读写操作不能重排到 1 的后面</p>
+<p><code>memory_order_acquire</code>：确保当前线程中的读或写不能被重排到此<strong>加载</strong>前，其他 release 同一原子变量的线程的所有写入，能为当前线程所见，也就是 3 一定在 4 之前</p>
+<p>综上两点，如果语句 3 在 2 之后执行的话，也就能确保 4 一定在 1 之后，从而达到某些同步的目的</p>
+<p><br></p>
+<h1 id="三、release-consume"><a href="#三、release-consume" class="headerlink" title="三、release/consume"></a>三、release/consume</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;atomic&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="built_in">std</span>::atomic&lt;<span class="keyword">int</span>*&gt; guard;</span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> value;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setValue</span><span class="params">(<span class="keyword">int</span> val)</span> </span>&#123;</span><br><span class="line">    value = val; <span class="comment">// 1</span></span><br><span class="line">    guard.store(&amp;value, <span class="built_in">std</span>::memory_order_release); <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getValue</span><span class="params">(<span class="keyword">int</span>&amp; val)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>* pv = guard.load(<span class="built_in">std</span>::memory_order_consume); <span class="comment">// 3</span></span><br><span class="line">    <span class="keyword">if</span> (pv) &#123;</span><br><span class="line">        val = *pv;  <span class="comment">// 4</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>memory_order_consume</code>: 确保当前线程中依赖于当前加载的该值的读或写不能被重排到此加载前，也就是 4 需要依赖 3 中的 <code>pv</code>，4 也就不能被重排到 3 之前，也就保证了执行顺序。</p>
+<p>如果 4 处的操作为 <code>val = value</code> 的话，3 和 4 就不存在依赖关系，也就不能保证一定的执行顺序，但是 <code>consume</code> 没有被主流的编译器实现</p>
+<p><br></p>
+<h1 id="四、relaxed"><a href="#四、relaxed" class="headerlink" title="四、relaxed"></a>四、relaxed</h1><p>仅仅实现原子性，没有线程同步的保证</p>
+<p>可以想象 A、B 二人同时在同一个白板上写 word，假设每次内存读修改写类比为写一个 word，如果没有原子操作限制，A、B 可能会把单词写串，使用原子操作，A 和 B 写入一个一个的单词，但是写入单词顺序没有保证，其他的 memory order 对顺序进行了一些不同粒度的规定  </p>
+<p><br></p>
+<h1 id="五、seq-cst"><a href="#五、seq-cst" class="headerlink" title="五、seq_cst"></a>五、seq_cst</h1><p>顺序一致性（sequential consistency），如果 load 就是 acquire 语义，如果 store 就是 release 语义，如果是读取+写入就是 acquire-release 语义，也就是对于所有 <code>acq_rel</code> 语义加上所有 <code>seq_cst</code> 的指令有严格的顺序一致性：</p>
+<ul>
+<li>在每个线程内部，每个处理器的执行顺序和代码中的顺序（program order）一样</li>
+<li>所有的处理器都看到了相同的执行顺序</li>
+</ul>
+<p>比如像 IM 群聊，每个成员就是一个处理器，如果满足下列条件就是顺序一致性：</p>
+<ul>
+<li>每个人发出去的消息的顺序和他自己看到发出消息的顺序是一致的</li>
+<li>群聊中所有人看到消息的顺序都一致</li>
+</ul>
+<p>当然，顺序一致性同步性最强，当然会造成很大的开销</p>
+<p><br></p>
+<h1 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h1><p>如果使用单一的计数值，可以使用 load/store + <code>std::memory_order_relaxed</code> </p>
+<p>需要同步某区块可以选择使用 load-acquire + store-release</p>
+<p>如果同步的需求比较复杂，干脆使用 <code>std::mutex</code> 就可以，没必要没事找事  </p>
+<p><br></p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a href="https://arxiv.org/pdf/1803.04432.pdf" target="_blank" rel="noopener">Memory Models for C/C++ Programmers</a></p>
+<p><a href="https://zh.cppreference.com/w/cpp/atomic/memory_order" target="_blank" rel="noopener">C++ standard memory order</a></p>
+<p><a href="https://www.codedump.info/post/20191214-cxx11-memory-model-1/" target="_blank" rel="noopener">codedump cxx11 memory model</a></p>
+<p><a href="https://www.zhihu.com/question/24301047" target="_blank" rel="noopener">zhihu: 如何理解 C++ 11 的六种 memory order</a></p>
+<p><a href="https://preshing.com/20140709/the-purpose-of-memory_order_consume-in-cpp11/" target="_blank" rel="noopener">consume memory order</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/C/" rel="tag"># C++</a>
+          
+            <a href="/tags/Dig/" rel="tag"># Dig</a>
+          
+            <a href="/tags/Arch/" rel="tag"># Arch</a>
+          
+            <a href="/tags/Atomic/" rel="tag"># Atomic</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/14/malloc-free/" rel="next" title="深入探究 malloc/free">
+                <i class="fa fa-chevron-left"></i> 深入探究 malloc/free
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/head.jpg" alt="syn1w">
+            
+              <p class="site-author-name" itemprop="name">syn1w</p>
+              <p class="site-description motion-element" itemprop="description">try, think, enjoy</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/syn1w" target="_blank" title="Github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Github</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、概述"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、release-acquire"><span class="nav-text">二、release/acquire</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、release-consume"><span class="nav-text">三、release/consume</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、relaxed"><span class="nav-text">四、relaxed</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五、seq-cst"><span class="nav-text">五、seq_cst</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#六、总结"><span class="nav-text">六、总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">syn1w</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
